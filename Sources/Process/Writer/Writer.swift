@@ -11,17 +11,13 @@ struct Writer {
             try file.write(to: url)
             return url
         } catch {
-            print("Cant write file with url: \(url)")
+            Console.error("Can't write file to: \(url)")
             return nil
         }
     }
 
     static func deleteFolder() {
-        do {
-            try FileManager.default.removeItem(at: tempDir)
-        } catch {
-            print("Cant delete temp directory \(error)")
-        }
+        try? FileManager.default.removeItem(at: tempDir)
     }
 }
 
@@ -45,7 +41,7 @@ private extension Writer {
                 withIntermediateDirectories: false
             )
         } catch {
-            print("Cant create temp directory \(error)")
+            Console.error("Can't create temp directory: \(error)")
         }
     }
 }

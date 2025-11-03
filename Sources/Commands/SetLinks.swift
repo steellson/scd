@@ -13,6 +13,6 @@ struct SetLinks: ParsableCommand {
         var settings = try Settings.read()
         settings.links = path
         try Settings.write(settings)
-        print("Links path set to: \(path)")
+        Console.success("Links path set to: \(path)")
     }
 }

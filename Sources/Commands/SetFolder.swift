@@ -13,6 +13,6 @@ struct SetFolder: ParsableCommand {
         var settings = try Settings.read()
         settings.dir = path
         try Settings.write(settings)
-        print("Folder path set to: \(path)")
+        Console.success("Folder path set to: \(path)")
     }
 }

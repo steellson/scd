@@ -24,7 +24,7 @@ struct Converter {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
 
             if let output = String(data: data, encoding: .utf8) {
-                print("FFMPEG error:\n\(output)")
+                Console.error("FFMPEG error:\n\(output)")
             }
         }
     }

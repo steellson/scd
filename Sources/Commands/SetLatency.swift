@@ -17,6 +17,6 @@ struct SetLatency: ParsableCommand {
         var settings = try Settings.read()
         settings.latency = UInt32(value)
         try Settings.write(settings)
-        print("Latency set to: \(value) seconds")
+        Console.success("Latency set to: \(value) seconds")
     }
 }

@@ -28,11 +28,13 @@ struct MainProcess {
                 /// Check required links
                 let settings = try Settings.read()
                 guard let linksPath = settings.links, !linksPath.isEmpty else {
-                    print("Missing links! Try sdc -set-links <path>")
+                    Console.error("Missing links! Try scd set-links <path>")
+                    sem.signal()
                     return
                 }
                 guard let dirPath = settings.dir, !dirPath.isEmpty else {
-                    print("Missing targer directory! Try scd set-folder <path>")
+                    Console.error("Missing target directory! Try scd set-folder <path>")
+                    sem.signal()
                     return
                 }
 
@@ -45,14 +47,13 @@ struct MainProcess {
                 let converted = try convert(files: files, dir: dir)
 
                 /// Logging when complete
-                let log = files.count == converted
-                ? "Completed!"
-                : "Warning: Some files cant be handled"
-                print(log)
+                files.count == converted
+                ? Console.success("Completed! Downloaded and converted \(converted) files")
+                : Console.warning("Some files couldn't be handled")
 
                 sem.signal()
             } catch {
-                print("Something went wrong: \(error.localizedDescription)")
+                Console.error("Something went wrong: \(error.localizedDescription)")
                 Writer.deleteFolder()
                 sem.signal()
             }
@@ -64,35 +65,35 @@ struct MainProcess {
     // MARK: - Loading
     private func download(links: URL, latency: UInt32) async throws -> [URL] {
         let links = try Reader.readLines(links)
-        print("Total: \(links.count)")
+        Console.info("Total links: \(links.count)")
 
         var files = [URL]()
         for (num, link) in links.enumerated() {
             sleep(latency)
 
             guard let html = try await Loader.loadHTML(link) else {
-                print("Cant load html page from link: \(link)")
+                Console.error("Can't load HTML page from link: \(link)")
                 break
             }
             guard let downloadLink = try Parser.getEmbedLink(html) else {
-                print("Cant parse download link!")
+                Console.error("Can't parse download link!")
                 break
             }
             guard let name = try Parser.getName(html) else {
-                print("Cant extract file name!")
+                Console.error("Can't extract file name!")
                 break
             }
             guard let file = try await Loader.loadFile(downloadLink) else {
-                print("Cant load file from link: \(downloadLink)")
+                Console.error("Can't load file from link: \(downloadLink)")
                 break
             }
             guard let wrirted = try Writer.write(with: name, file: file) else {
-                print("Cant write file with name: \(name)")
+                Console.error("Can't write file with name: \(name)")
                 break
             }
 
             files.append(wrirted)
-            print("Downloaded: \(num). \(name)")
+            Console.download("[\(num + 1)/\(links.count)] \(name)")
         }
 
         return files
@@ -101,7 +102,7 @@ struct MainProcess {
     // MARK: - Convertation
     private func convert(files: [URL], dir: URL) throws -> Int {
         var converted: Int = .zero
-        print("Processing files ...")
+        Console.progress("Processing files...")
 
         for file in files {
             try Converter.convert(file, dir: dir)
