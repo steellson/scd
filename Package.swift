@@ -7,15 +7,15 @@ let package = Package(
     name: "scd",
     platforms: [.macOS(.v13)],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
-        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.11.1")
+        .package(path: "Libs/swift-argument-parser"),
+        .package(path: "Libs/swift-soup")
     ],
     targets: [
         .executableTarget(
             name: "scd",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                "SwiftSoup"
+                .product(name: "SwiftSoup", package: "swift-soup")
             ]
         ),
     ]
