@@ -9,24 +9,22 @@ struct Converter {
     ///   - dir: Target directory for storage
     /// - Returns: Is convertation successed
    static func convert(_ file: URL, dir: URL) throws {
-        let pipe = Pipe()
-        let process = Process()
+       let process = Process()
+       process.executableURL = ffmpeg
+       process.arguments = arguments(file, dir: dir)
 
-        process.standardOutput = pipe
-        process.standardError = pipe
-        process.executableURL = ffmpeg
-        process.arguments = arguments(file, dir: dir)
+       /// Redirect all I/O to prevent blocking
+       let devNull = FileHandle.nullDevice
+       process.standardInput = devNull
+       process.standardOutput = devNull
+       process.standardError = devNull
 
-        try process.run()
-        process.waitUntilExit()
+       try process.run()
+       process.waitUntilExit()
 
-        if process.terminationStatus != .zero {
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-
-            if let output = String(data: data, encoding: .utf8) {
-                Console.error("FFMPEG error:\n\(output)")
-            }
-        }
+       if process.terminationStatus != .zero {
+           Console.error("FFMPEG failed with exit code: \(process.terminationStatus)")
+       }
     }
 }
 
@@ -44,6 +42,7 @@ private extension Converter {
             .path
 
         return [
+            "-nostdin",             // Don't expect any input from stdin
             "-y",                   // Rewrite file if exist
             "-i", inputFile,        // Input file
             "-ar", "44100",         // Sampling rate

@@ -17,6 +17,7 @@ struct Writer {
     }
 
     static func deleteFolder() {
+        Console.progress("Cleaning up temp folder...")
         try? FileManager.default.removeItem(at: tempDir)
     }
 }
