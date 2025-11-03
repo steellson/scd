@@ -8,7 +8,8 @@ struct scd: ParsableCommand {
             Start.self,
             SetLinks.self,
             SetFolder.self,
-            SetLatency.self
+            SetLatency.self,
+            SettingsCheck.self
         ]
     )
 }

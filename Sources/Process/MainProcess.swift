@@ -67,7 +67,7 @@ struct MainProcess {
         print("Total: \(links.count)")
 
         var files = [URL]()
-        for link in links {
+        for (num, link) in links.enumerated() {
             sleep(latency)
 
             guard let html = try await Loader.loadHTML(link) else {
@@ -92,7 +92,7 @@ struct MainProcess {
             }
 
             files.append(wrirted)
-            print("Downloaded: \(name)")
+            print("Downloaded: \(num). \(name)")
         }
 
         return files
