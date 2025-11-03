@@ -15,14 +15,27 @@ struct scd: ParsableCommand {
         Task {
             do {
                 let settings = try Settings.read()
-                let files = try await download(settings)
-                let converted = try convert(files, settings)
-                log(files.count == converted)
 
+                guard let linksPath = settings.links, !linksPath.isEmpty else {
+                    preconditionFailure("Missing links! Try sdc -set-links <path>")
+                }
+                guard let dirPath = settings.dir, !dirPath.isEmpty else {
+                    preconditionFailure("Missing targer directory! Try scd set-folder <path>")
+                }
+
+                let links = URL(fileURLWithPath: linksPath)
+                let dir = URL(fileURLWithPath: dirPath)
+
+                let latency = settings.latency ?? 15
+                let files = try await download(links: links, latency: latency)
+                let converted = try convert(files: files, dir: dir)
+
+                log(files.count == converted)
                 sem.signal()
             } catch {
-                assertionFailure("Something went wrong: \(error.localizedDescription)")
-                sem.signal()
+                print("Something went wrong: \(error.localizedDescription)")
+                Writer.deleteFolder()
+                fatalError()
             }
         }
 
@@ -30,20 +43,13 @@ struct scd: ParsableCommand {
     }
 
     // MARK: - Loading
-    func download(_ settings: Settings) async throws -> [URL] {
-        guard let sourceFile = settings.sourceFile else {
-            assertionFailure("Missing links! Try sdc -set-links <path>")
-            return []
-        }
-
-        let source = dir.appending(path: sourceFile)
-        let links = try Reader.readLines(source)
-
+    func download(links: URL, latency: UInt32) async throws -> [URL] {
+        let links = try Reader.readLines(links)
         print("Total: \(links.count)")
 
         var files = [URL]()
         for link in links {
-            sleep(settings.latency ?? 15)
+            sleep(latency)
 
             guard let html = try await Loader.loadHTML(link) else {
                 print("Cant load html page from link: \(link)")
@@ -73,16 +79,11 @@ struct scd: ParsableCommand {
     }
 
     // MARK: - Convertation
-    func convert(_ files: [URL], _ settings: Settings) throws -> Int {
-        guard let dir = settings.targetDir, let url = URL(string: dir) else {
-            assertionFailure("Missing targer directory! Try scd set-folder <path>")
-            return .zero
-        }
-
+    func convert(files: [URL], dir: URL) throws -> Int {
         var converted: Int = .zero
 
         for file in files {
-            try Converter.convert(file, dir: url)
+            try Converter.convert(file, dir: dir)
             converted += 1
         }
 

@@ -1,9 +1,9 @@
 import Foundation
 
 struct Settings: Codable {
-    let sourceFile: String?
-    let targetDir: String?
-    let latency: UInt32?
+    var links: String?
+    var dir: String?
+    var latency: UInt32?
 }
 
 extension Settings {
@@ -15,7 +15,17 @@ extension Settings {
 
     static func read() throws -> Self {
         let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode(Self.self, from: data)
+        var settings = try JSONDecoder().decode(Self.self, from: data)
+
+        if let links = settings.links, !links.isEmpty, !links.hasPrefix("/") {
+            settings.links = "/\(links)"
+        }
+
+        if let dir = settings.dir, !dir.isEmpty, !dir.hasPrefix("/") {
+            settings.dir = "/\(dir)"
+        }
+
+        return settings
     }
 
     static func write(_ settings: Self) throws {
