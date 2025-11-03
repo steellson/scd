@@ -1,7 +1,7 @@
 import SwiftSoup
 import Foundation
 
-struct HTMLParser {
+struct Parser {
     typealias Dict = [String: Any]
 
     static func getEmbedLink(_ page: String) throws -> String? {
