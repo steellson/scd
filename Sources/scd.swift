@@ -1,14 +1,14 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-// 
-// Swift Argument Parser
-// https://swiftpackageindex.com/apple/swift-argument-parser/documentation
-
 import ArgumentParser
+import Foundation
+
+let dir = URL(fileURLWithPath: #filePath)
+    .deletingLastPathComponent()
+    .deletingLastPathComponent()
 
 @main
 struct scd: ParsableCommand {
     mutating func run() throws {
-        print("Hello, world!")
+
+        print("")
     }
 }
