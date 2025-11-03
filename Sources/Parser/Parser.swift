@@ -31,4 +31,28 @@ struct Parser {
 
         return nil
     }
+
+    static func getName(_ page: String) throws -> String? {
+        let doc = try SwiftSoup.parse(page)
+        let scripts = try doc.select("script[data-tralbum]").array()
+
+        for script in scripts {
+            let jsonString = try? script
+                .attr("data-tralbum")
+                .replacingOccurrences(of: "&quot;", with: "\"")
+
+            guard let jsonData = jsonString?.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: jsonData) as? Dict,
+                  let artist = json["artist"] as? String,
+                  let current = json["current"] as? Dict,
+                  let title = current["title"] as? String else {
+                continue
+            }
+
+            let name = artist + " - " + title
+            return name.replacingOccurrences(of: "/", with: "").capitalized
+        }
+
+        return nil
+    }
 }

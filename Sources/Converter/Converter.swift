@@ -1,47 +1,43 @@
 import Foundation
 
 struct Converter {
-    private let folder: URL
-    private let ffmpeg: URL = URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
-
-    init(_ folder: URL) {
-        self.folder = folder
-    }
+    private static let ffmpeg: URL = URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
 
     /// Convert mp3 file to WAV format using `ffmpeg`
     /// - Parameters:
     ///   - file: Target mp3 file
+    ///   - dir: Target directory for storage
     /// - Returns: Is convertation successed
-    func convert(_ file: URL) throws -> Bool {
+   static func convert(_ file: URL, dir: URL) throws {
         let pipe = Pipe()
         let process = Process()
 
         process.standardOutput = pipe
         process.standardError = pipe
         process.executableURL = ffmpeg
-        process.arguments = arguments(file)
+        process.arguments = arguments(file, dir: dir)
 
         try process.run()
         process.waitUntilExit()
 
-        guard process.terminationStatus == .zero else {
+        if process.terminationStatus != .zero {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
+
             if let output = String(data: data, encoding: .utf8) {
-                print("Convert error:\n\(output)")
+                print("FFMPEG error:\n\(output)")
             }
-            return false
         }
-
-        print("Converted: \(file)")
-        return true
     }
+}
 
+// MARK: - Private
+private extension Converter {
     /// Collect args for convertation
-    /// - Parameter file: File to convert
-    /// - Returns: Array of required arguments
-    private func arguments(_ file: URL) -> [String] {
-        let inputFile = file.path()
-        let outputFile = folder
+    static func arguments(_ file: URL, dir: URL) -> [String] {
+        let inputFile = file
+            .path(percentEncoded: false)
+
+        let outputFile = dir
             .appendingPathComponent(file.lastPathComponent)
             .deletingPathExtension()
             .appendingPathExtension("wav")

@@ -1,9 +1,9 @@
 import Foundation
 
 struct Writer {
-    private let manager = FileManager.default
+    static let tempDir: URL = dir.appending(path: "temp")
 
-    func write(with name: String, file: Data) throws -> URL? {
+    static func write(with name: String, file: Data) throws -> URL? {
         checkFolder()
         let url = tempDir.appending(path: name)
 
@@ -16,9 +16,9 @@ struct Writer {
         }
     }
 
-    func deleteFolder() {
+    static func deleteFolder() {
         do {
-            try manager.removeItem(at: tempDir)
+            try FileManager.default.removeItem(at: tempDir)
         } catch {
             print("Cant delete temp directory \(error)")
         }
@@ -27,9 +27,9 @@ struct Writer {
 
 // MARK: - Private
 private extension Writer {
-    func checkFolder() {
+    static func checkFolder() {
         var isDir = ObjCBool(true)
-        let isTempDirExist = manager.fileExists(
+        let isTempDirExist = FileManager.default.fileExists(
             atPath: tempDir.path(),
             isDirectory: &isDir
         )
@@ -38,9 +38,9 @@ private extension Writer {
         createFolder()
     }
 
-    func createFolder() {
+    static func createFolder() {
         do {
-            try manager.createDirectory(
+            try FileManager.default.createDirectory(
                 at: tempDir,
                 withIntermediateDirectories: false
             )
