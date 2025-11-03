@@ -1,16 +1,26 @@
 import Foundation
 
+/// *Programm working directory*
 let dir = URL(fileURLWithPath: #filePath)
     .deletingLastPathComponent()
     .deletingLastPathComponent()
 
+
+/// Handle force exit using `CTRL+C`
+/// Catch signal and remove temp folder if needed
+/// Working on `.global` queue
+nonisolated(unsafe) private var exitHandler: DispatchSourceSignal?
+
+
+/// `` PROCESS PIPELINE ``
+/// ** Check requirements *
+/// ** Download **
+/// ** Convert **
+/// ** Log **
 struct MainProcess {
-    /// ``Downloader process pipeline``
-    /// ** Check requirements *
-    /// ** Download **
-    /// ** Convert **
-    /// ** Log **
     func run() {
+        setupExitHandler()
+
         let sem = DispatchSemaphore(value: 0)
 
         Task {
@@ -52,7 +62,7 @@ struct MainProcess {
     }
 
     // MARK: - Loading
-    func download(links: URL, latency: UInt32) async throws -> [URL] {
+    private func download(links: URL, latency: UInt32) async throws -> [URL] {
         let links = try Reader.readLines(links)
         print("Total: \(links.count)")
 
@@ -89,7 +99,7 @@ struct MainProcess {
     }
 
     // MARK: - Convertation
-    func convert(files: [URL], dir: URL) throws -> Int {
+    private func convert(files: [URL], dir: URL) throws -> Int {
         var converted: Int = .zero
         print("Processing files ...")
 
@@ -100,5 +110,13 @@ struct MainProcess {
 
         Writer.deleteFolder()
         return converted
+    }
+
+    // MARK: - Force exit handling
+    private func setupExitHandler() {
+        exitHandler = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
+        exitHandler?.setEventHandler { Writer.deleteFolder(); exit(0) }
+        exitHandler?.resume()
+        signal(SIGINT, SIG_IGN)
     }
 }
