@@ -33,10 +33,6 @@ var package = Package(
       dependencies: ["ArgumentParserToolInfo"],
       exclude: ["CMakeLists.txt"]),
     .target(
-      name: "ArgumentParserTestHelpers",
-      dependencies: ["ArgumentParser", "ArgumentParserToolInfo"],
-      exclude: ["CMakeLists.txt"]),
-    .target(
       name: "ArgumentParserToolInfo",
       exclude: ["CMakeLists.txt"]),
 
@@ -88,37 +84,6 @@ var package = Package(
       name: "generate-manual",
       dependencies: ["ArgumentParser", "ArgumentParserToolInfo"],
       path: "Tools/generate-manual"),
-
-    // Tests
-    .testTarget(
-      name: "ArgumentParserEndToEndTests",
-      dependencies: ["ArgumentParser", "ArgumentParserTestHelpers"],
-      exclude: ["CMakeLists.txt"]),
-    .testTarget(
-      name: "ArgumentParserExampleTests",
-      dependencies: ["ArgumentParserTestHelpers"],
-      exclude: ["Snapshots"],
-      resources: [.copy("CountLinesTest.txt")]),
-    .testTarget(
-      name: "ArgumentParserGenerateDoccReferenceTests",
-      dependencies: ["ArgumentParserTestHelpers"],
-      exclude: ["Snapshots"]),
-    .testTarget(
-      name: "ArgumentParserGenerateManualTests",
-      dependencies: ["ArgumentParserTestHelpers"],
-      exclude: ["Snapshots"]),
-    .testTarget(
-      name: "ArgumentParserPackageManagerTests",
-      dependencies: ["ArgumentParser", "ArgumentParserTestHelpers"],
-      exclude: ["CMakeLists.txt"]),
-    .testTarget(
-      name: "ArgumentParserToolInfoTests",
-      dependencies: ["ArgumentParserToolInfo"],
-      exclude: ["Examples"]),
-    .testTarget(
-      name: "ArgumentParserUnitTests",
-      dependencies: ["ArgumentParser", "ArgumentParserTestHelpers"],
-      exclude: ["CMakeLists.txt", "Snapshots"]),
   ]
 )
 

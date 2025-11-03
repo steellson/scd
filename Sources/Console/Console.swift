@@ -73,7 +73,11 @@ enum Console {
     /// Setting info line (used in settings display)
     static func setting(name: String, value: String?, width: Int = 20) {
         let formattedName = "\(name):".padding(toLength: width, withPad: " ", startingAt: 0)
-        let formattedValue = value ?? "\(Color.yellow.rawValue)Not set\(Color.reset.rawValue)"
+        let formattedValue = if let value, !value.isEmpty {
+            value
+        } else {
+            "\(Color.yellow.rawValue)Not setted\(Color.reset.rawValue)"
+        }
         print("\(Color.cyan.rawValue)\(formattedName)\(Color.reset.rawValue) \(formattedValue)")
     }
 }
