@@ -14,6 +14,7 @@ nonisolated(unsafe) private var exitHandler: DispatchSourceSignal?
 
 /// `` PROCESS PIPELINE ``
 /// ** Check requirements *
+/// ** Prepare links **
 /// ** Download **
 /// ** Convert **
 /// ** Log **
@@ -25,7 +26,7 @@ struct MainProcess {
 
         Task {
             do {
-                /// Check required links
+                /// Check requirements
                 let settings = try Settings.read()
                 guard let linksPath = settings.links, !linksPath.isEmpty else {
                     Console.error("Missing links! Try scd set-links <path>")
@@ -37,14 +38,28 @@ struct MainProcess {
                     sem.signal()
                     return
                 }
+                guard let converterPath = settings.converter, !converterPath.isEmpty else {
+                    Console.error("Missing target directory! Try scd set-converter <path>")
+                    sem.signal()
+                    return
+                }
 
                 /// Initialize and start process
-                let links = URL(fileURLWithPath: linksPath)
                 let dir = URL(fileURLWithPath: dirPath)
+                let linksURL = URL(fileURLWithPath: linksPath)
+                let converter = URL(filePath: converterPath)
 
                 let latency = settings.latency ?? 15
+                let format = settings.format ?? .wav
+
+                let links = try await prepareLinks(linksURL)
                 let files = try await download(links: links, latency: latency)
-                let converted = try convert(files: files, dir: dir)
+                let converted = try convert(
+                    files: files,
+                    format: format,
+                    converter: converter,
+                    dir: dir
+                )
 
                 /// Logging when complete
                 files.count == converted
@@ -62,9 +77,26 @@ struct MainProcess {
         sem.wait()
     }
 
+    // MARK: - Prepare
+    private func prepareLinks(_ links: URL) async throws -> [String] {
+        let tracks = try Reader.read(links, content: .track)
+        let albums = try Reader.read(links, content: .album)
+
+        var albumTracks = [String]()
+        for url in albums {
+            guard let html = try await Loader.loadHTML(url) else {
+                Console.warning("Can't load HTML for album: \(url)")
+                continue
+            }
+            let tracks = try Parser.getTrackLinks(html)
+            albumTracks.append(contentsOf: tracks)
+        }
+
+        return tracks + albumTracks
+    }
+
     // MARK: - Loading
-    private func download(links: URL, latency: UInt32) async throws -> [URL] {
-        let links = try Reader.readLines(links)
+    private func download(links: [String], latency: UInt32) async throws -> [URL] {
         Console.info("Total links: \(links.count)")
 
         var files = [URL]()
@@ -100,12 +132,23 @@ struct MainProcess {
     }
 
     // MARK: - Convertation
-    private func convert(files: [URL], dir: URL) throws -> Int {
+    private func convert(
+        files: [URL],
+        format: AudioFormat,
+        converter: URL,
+        dir: URL
+    ) throws -> Int {
+        let converter = Converter(
+            format: format,
+            converter: converter,
+            dir: dir
+        )
+
         var converted: Int = .zero
         Console.progress("Processing files...")
 
         for file in files {
-            try Converter.convert(file, dir: dir)
+            try converter.convert(file)
             converted += 1
         }
 

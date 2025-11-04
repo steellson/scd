@@ -7,7 +7,9 @@ struct scd: ParsableCommand {
         subcommands: [
             Start.self,
             SetLinks.self,
+            SetFFMPEG.self,
             SetFolder.self,
+            SetFormat.self,
             SetLatency.self,
             SettingsCheck.self
         ]

@@ -1,17 +1,35 @@
 import Foundation
 
-struct Converter {
-    private static let ffmpeg: URL = URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
+enum AudioFormat: String, Codable {
+    case mp3
+    case wav
+    case flac
+}
 
-    /// Convert mp3 file to WAV format using `ffmpeg`
+struct Converter {
+    private let format: AudioFormat
+    private let converter: URL
+    private let dir: URL
+
+    init(
+        format: AudioFormat,
+        converter: URL,
+        dir: URL
+    ) {
+        self.format = format
+        self.converter = converter
+        self.dir = dir
+    }
+
+    /// Convert mp3 file to selected format using `ffmpeg`
     /// - Parameters:
     ///   - file: Target mp3 file
     ///   - dir: Target directory for storage
     /// - Returns: Is convertation successed
-   static func convert(_ file: URL, dir: URL) throws {
+    func convert(_ file: URL) throws {
        let process = Process()
-       process.executableURL = ffmpeg
-       process.arguments = arguments(file, dir: dir)
+       process.executableURL = converter
+       process.arguments = arguments(file)
 
        /// Redirect all I/O to prevent blocking
        let devNull = FileHandle.nullDevice
@@ -31,7 +49,7 @@ struct Converter {
 // MARK: - Private
 private extension Converter {
     /// Collect args for convertation
-    static func arguments(_ file: URL, dir: URL) -> [String] {
+    func arguments(_ file: URL) -> [String] {
         let inputFile = file
             .path(percentEncoded: false)
 
