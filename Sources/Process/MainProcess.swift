@@ -19,7 +19,7 @@ nonisolated(unsafe) private var exitHandler: DispatchSourceSignal?
 /// ** Convert **
 /// ** Log **
 struct MainProcess {
-    func run() {
+    func run(with settings: Settings) {
         setupExitHandler()
 
         let sem = DispatchSemaphore(value: 0)
@@ -27,7 +27,6 @@ struct MainProcess {
         Task {
             do {
                 /// Check requirements
-                let settings = try Settings.read()
                 guard let linksPath = settings.links, !linksPath.isEmpty else {
                     Console.error("Missing links! Try scd set-links <path>")
                     sem.signal()
@@ -39,7 +38,7 @@ struct MainProcess {
                     return
                 }
                 guard let converterPath = settings.converter, !converterPath.isEmpty else {
-                    Console.error("Missing target directory! Try scd set-converter <path>")
+                    Console.error("Missing ffmpeg path! Try scd set-converter <path>")
                     sem.signal()
                     return
                 }

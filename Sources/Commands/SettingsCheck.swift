@@ -10,7 +10,7 @@ struct SettingsCheck: ParsableCommand {
     mutating func run() throws {
         let settings = try Settings.read()
 
-        Console.bold("Current Settings")
+        Console.bold("Local Settings")
         Console.setting(name: "Links file", value: settings.links)
         Console.setting(name: "Target folder", value: settings.dir)
         Console.setting(name: "FFMPEG path", value: settings.converter)

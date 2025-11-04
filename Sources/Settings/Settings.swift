@@ -6,8 +6,24 @@ struct Settings: Codable {
     var latency: UInt32?
     var format: AudioFormat?
     var converter: String?
+
+    /// To merge arguments from command line with stored settings
+    mutating func merge(with settings: Self) -> Self {
+        if let converter = settings.converter { self.converter = Self.safe(path: converter) }
+        if let links = settings.links { self.links = Self.safe(path: links) }
+        if let dir = settings.dir { self.dir = Self.safe(path: dir) }
+        if let format = settings.format { self.format = format }
+
+        if let latency = settings.latency,
+           latency >= 3 && latency <= 300 {
+            self.latency = latency
+        }
+
+        return self
+    }
 }
 
+// MARK: - Read / Write
 extension Settings {
     private static var url: URL {
         URL(fileURLWithPath: #filePath)
