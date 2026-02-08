@@ -15,7 +15,7 @@ struct Writer {
     }
 
     static func deleteFolder(withLog: Bool = true) {
-        Console.progress("Cleaning up temp folder...")
+        if withLog { Console.progress("Cleaning up temp folder...") }
         try? FileManager.default.removeItem(at: tempDir)
     }
 }
