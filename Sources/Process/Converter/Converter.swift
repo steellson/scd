@@ -61,7 +61,6 @@ private extension Converter {
 
         var args = [
             "-nostdin",       // Don't expect any input from stdin
-            "-y",             // Rewrite file if exist
             "-i", inputFile   // Input file
         ]
 
