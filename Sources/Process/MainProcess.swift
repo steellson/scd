@@ -48,7 +48,7 @@ struct MainProcess {
                 let linksURL = URL(fileURLWithPath: linksPath)
                 let converter = URL(filePath: converterPath)
 
-                let latency = settings.latency ?? 15
+                let latency = settings.latency ?? 3
                 let format = settings.format ?? .wav
 
                 let links = try await prepareLinks(linksURL)

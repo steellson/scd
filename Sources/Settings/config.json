@@ -1,7 +1,0 @@
-{
-    "links": "",
-    "dir": "",
-    "latency": 5,
-    "format": "wav",
-    "converter": "/opt/homebrew/bin/ffmpeg"
-}

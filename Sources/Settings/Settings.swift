@@ -7,6 +7,30 @@ struct Settings: Codable {
     var format: AudioFormat?
     var converter: String?
 
+    /// Common
+    init(
+        links: String?,
+        dir: String?,
+        latency: UInt32?,
+        format: AudioFormat?,
+        converter: String?
+    ) {
+        self.links = links
+        self.dir = dir
+        self.latency = latency
+        self.format = format
+        self.converter = converter
+    }
+
+    /// Default
+    fileprivate init() {
+        links = ""
+        dir = ""
+        latency = 3
+        format = .wav
+        converter = "/opt/homebrew/bin/ffmpeg"
+    }
+
     /// To merge arguments from command line with stored settings
     mutating func merge(with settings: Self) -> Self {
         if let converter = settings.converter { self.converter = Self.safe(path: converter) }
@@ -25,13 +49,9 @@ struct Settings: Codable {
 
 // MARK: - Read / Write
 extension Settings {
-    private static var url: URL {
-        URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .appending(path: "config.json")
-    }
-
     static func read() throws -> Self {
+        if isFirstLaunch { try initialize() }
+
         let data = try Data(contentsOf: url)
         var settings = try JSONDecoder().decode(Self.self, from: data)
 
@@ -49,6 +69,31 @@ extension Settings {
 
 // MARK: - Private
 private extension Settings {
+    static var url: URL {
+        FileManager.default
+            .homeDirectoryForCurrentUser
+            .appending(path: "scd/settings/config.json")
+    }
+
+    static var isFirstLaunch: Bool {
+        !FileManager.default.fileExists(atPath: url.path)
+    }
+
+    static func initialize() throws {
+        guard isFirstLaunch else { return }
+
+        do {
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try write(Settings())
+        } catch (let error) {
+            Console.error("⚠️ Settings couldnt be initialized!")
+            throw error
+        }
+    }
+
     static func safe(path: String?) -> String? {
         if let path, !path.isEmpty, !path.hasPrefix("/") {
             return "/\(path)"
