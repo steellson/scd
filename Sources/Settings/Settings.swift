@@ -45,6 +45,14 @@ struct Settings: Codable {
 
         return self
     }
+
+    private static func safe(path: String?) -> String? {
+        if let path, !path.isEmpty, !path.hasPrefix("/") {
+            return "/\(path)"
+        } else {
+            return path
+        }
+    }
 }
 
 // MARK: - Read / Write
@@ -67,16 +75,10 @@ extension Settings {
     }
 }
 
-// MARK: - Private
-private extension Settings {
+// MARK: - Initializable
+extension Settings: Initializable {
     static var url: URL {
-        FileManager.default
-            .homeDirectoryForCurrentUser
-            .appending(path: "scd/settings/config.json")
-    }
-
-    static var isFirstLaunch: Bool {
-        !FileManager.default.fileExists(atPath: url.path)
+        Store.url.appending(path: "settings/config.json")
     }
 
     static func initialize() throws {
@@ -91,14 +93,6 @@ private extension Settings {
         } catch (let error) {
             Console.error("⚠️ Settings couldnt be initialized!")
             throw error
-        }
-    }
-
-    static func safe(path: String?) -> String? {
-        if let path, !path.isEmpty, !path.hasPrefix("/") {
-            return "/\(path)"
-        } else {
-            return path
         }
     }
 }

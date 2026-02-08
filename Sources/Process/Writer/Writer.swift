@@ -1,8 +1,6 @@
 import Foundation
 
 struct Writer {
-    static let tempDir: URL = dir.appending(path: "temp")
-
     static func write(with name: String, file: Data) throws -> URL? {
         checkFolder()
         let url = createFileURL(name)
@@ -24,6 +22,10 @@ struct Writer {
 
 // MARK: - Private
 private extension Writer {
+    static var tempDir: URL {
+        Store.url.appending(path: "temp")
+    }
+
     static func checkFolder() {
         var isDir = ObjCBool(true)
         let isTempDirExist = FileManager.default.fileExists(

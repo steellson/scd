@@ -1,11 +1,5 @@
 import Foundation
 
-/// *Programm working directory*
-let dir = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent()
-    .deletingLastPathComponent()
-
-
 /// Handle force exit using `CTRL+C`
 /// Catch signal and remove temp folder if needed
 /// Working on `.global` queue
