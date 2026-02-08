@@ -15,6 +15,7 @@ nonisolated(unsafe) private var exitHandler: DispatchSourceSignal?
 struct MainProcess {
     func run(with settings: Settings) {
         setupExitHandler()
+        Writer.deleteFolder(withLog: false)
 
         let sem = DispatchSemaphore(value: 0)
 
